@@ -2,9 +2,9 @@
 
 import json
 
-from cc_improve.analyzer.judge import _get_unanalyzed_sessions
-from cc_improve.paths import prompt_version
-from cc_improve.collector.ingest import ingest_session
+from catharsis.analyzer.judge import _get_unanalyzed_sessions
+from catharsis.paths import prompt_version
+from catharsis.collector.ingest import ingest_session
 
 
 def test_prompt_version_stable():

@@ -2,7 +2,7 @@
 
 import json
 
-from cc_improve.improver.propose import get_top_patterns
+from catharsis.improver.propose import get_top_patterns
 
 
 def test_get_top_patterns_empty(db_conn):

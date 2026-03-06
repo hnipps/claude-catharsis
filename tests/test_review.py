@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from cc_improve.reviewer.interactive import get_pending_proposals, _reject_proposal
+from catharsis.reviewer.interactive import get_pending_proposals, _reject_proposal
 
 
 def test_get_pending_proposals_empty(db_conn):

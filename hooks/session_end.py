@@ -4,7 +4,7 @@
 Install by adding to ~/.claude/settings.json under hooks.SessionEnd:
 {
     "type": "command",
-    "command": "python /path/to/cc-improve/hooks/session_end.py"
+    "command": "python /path/to/catharsis/hooks/session_end.py"
 }
 
 Fails open — never blocks the user's Claude session.
@@ -15,7 +15,7 @@ import sys
 
 def main() -> int:
     try:
-        from cc_improve.collector.hook import handle_session_end
+        from catharsis.collector.hook import handle_session_end
         handle_session_end()
     except Exception:
         pass  # Fail open

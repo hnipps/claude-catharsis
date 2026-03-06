@@ -8,7 +8,7 @@ import sqlite3
 import subprocess
 from datetime import datetime, timedelta, timezone
 
-from cc_improve.paths import ARCHIVE_DIR, REPORTS_DIR, load_prompt, prompt_version
+from catharsis.paths import ARCHIVE_DIR, REPORTS_DIR, load_prompt, prompt_version
 
 logger = logging.getLogger(__name__)
 

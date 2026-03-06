@@ -8,8 +8,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from cc_improve.analyzer.metrics import MetricResult
-from cc_improve.paths import REPORTS_DIR
+from catharsis.analyzer.metrics import MetricResult
+from catharsis.paths import REPORTS_DIR
 
 METRIC_LABELS = {
     "turns_to_first_commit": "Turns to First Commit",

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from cc_improve.collector.backfill import discover_sessions
-from cc_improve.paths import CLAUDE_PROJECTS_DIR
+from catharsis.collector.backfill import discover_sessions
+from catharsis.paths import CLAUDE_PROJECTS_DIR
 
 
 @pytest.mark.skipif(
@@ -29,7 +29,7 @@ def test_discover_real_sessions():
 )
 def test_parse_real_session():
     """Verify we can parse a real session."""
-    from cc_improve.collector.parser import parse_jsonl
+    from catharsis.collector.parser import parse_jsonl
 
     sessions = discover_sessions()
     if not sessions:
@@ -48,9 +48,9 @@ def test_parse_real_session():
 )
 def test_full_collect_and_analyze(tmp_path):
     """Full e2e: collect real sessions, compute metrics."""
-    from cc_improve.collector.backfill import backfill
-    from cc_improve.analyzer.metrics import compute_all_metrics
-    from cc_improve.db import ensure_schema, get_connection
+    from catharsis.collector.backfill import backfill
+    from catharsis.analyzer.metrics import compute_all_metrics
+    from catharsis.db import ensure_schema, get_connection
 
     db_path = tmp_path / "integration_test.db"
     conn = get_connection(db_path)

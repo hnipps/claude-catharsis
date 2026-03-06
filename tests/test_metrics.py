@@ -2,14 +2,14 @@
 
 from datetime import datetime, timezone
 
-from cc_improve.analyzer.metrics import (
+from catharsis.analyzer.metrics import (
     commitless_session_rate,
     compute_all_metrics,
     file_edit_churn,
     tool_error_rate,
     turns_to_first_commit,
 )
-from cc_improve.collector.ingest import ingest_session
+from catharsis.collector.ingest import ingest_session
 
 
 def _ingest_both(db_conn, sample_jsonl, sample_jsonl_no_commit, tmp_path):

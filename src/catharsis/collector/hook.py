@@ -7,9 +7,9 @@ import logging
 import sys
 from pathlib import Path
 
-from cc_improve.collector.ingest import ingest_session
-from cc_improve.db import ensure_schema, get_connection
-from cc_improve.paths import CLAUDE_PROJECTS_DIR, decode_project_path, ensure_dirs
+from catharsis.collector.ingest import ingest_session
+from catharsis.db import ensure_schema, get_connection
+from catharsis.paths import CLAUDE_PROJECTS_DIR, decode_project_path, ensure_dirs
 
 logger = logging.getLogger(__name__)
 

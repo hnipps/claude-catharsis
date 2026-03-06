@@ -1,11 +1,11 @@
-"""SQLite database management for cc-improve."""
+"""SQLite database management for Claude Catharsis."""
 
 from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
 
-from cc_improve.paths import DB_PATH, ensure_dirs
+from catharsis.paths import DB_PATH, ensure_dirs
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sessions (

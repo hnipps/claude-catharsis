@@ -1,4 +1,4 @@
-"""Configuration loading for cc-improve."""
+"""Configuration loading for Claude Catharsis."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from cc_improve.paths import CONFIG_PATH
+from catharsis.paths import CONFIG_PATH
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "lookback_days": 7,

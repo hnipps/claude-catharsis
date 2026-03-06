@@ -9,7 +9,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cc_improve.paths import ARCHIVE_DIR, PROPOSALS_DIR, load_prompt, prompt_version
+from catharsis.paths import ARCHIVE_DIR, PROPOSALS_DIR, load_prompt, prompt_version
 
 logger = logging.getLogger(__name__)
 

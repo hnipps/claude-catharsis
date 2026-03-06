@@ -1,4 +1,4 @@
-"""Path constants for cc-improve."""
+"""Path constants for Claude Catharsis."""
 
 from pathlib import Path
 

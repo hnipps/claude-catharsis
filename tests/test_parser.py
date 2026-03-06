@@ -1,6 +1,6 @@
 """Tests for the JSONL parser."""
 
-from cc_improve.collector.parser import parse_jsonl
+from catharsis.collector.parser import parse_jsonl
 
 
 def test_parse_basic_session(sample_jsonl):

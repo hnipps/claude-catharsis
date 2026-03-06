@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from cc_improve.db import ensure_schema
+from catharsis.db import ensure_schema
 
 
 @pytest.fixture
