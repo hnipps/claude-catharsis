@@ -1,4 +1,4 @@
-# cc-improve
+# Claude Catharsis
 
 A self-improvement feedback loop for Claude Code. Analyzes your past conversations to detect failure patterns, then generates targeted instruction changes to prevent them.
 
@@ -26,25 +26,25 @@ pip install -e .
 
 ```bash
 # Backfill all existing sessions into the database
-cc-improve collect
+catharsis collect
 
 # Collect a specific session
-cc-improve collect --session-id <uuid>
+catharsis collect --session-id <uuid>
 
 # Run analysis (deterministic metrics + LLM judge)
-cc-improve analyze
+catharsis analyze
 
 # Metrics only, no LLM calls
-cc-improve analyze --skip-llm
+catharsis analyze --skip-llm
 
 # Generate improvement proposals from failure patterns
-cc-improve suggest
+catharsis suggest
 
 # Interactively review and apply proposals
-cc-improve review
+catharsis review
 
 # Show system status dashboard
-cc-improve status
+catharsis status
 ```
 
 ## Configuration

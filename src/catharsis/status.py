@@ -1,4 +1,4 @@
-"""Status dashboard for cc-improve."""
+"""Status dashboard for Claude Catharsis."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def show_status(conn: sqlite3.Connection, console: Console | None = None) -> dic
         stats["analysis_pct"] = 0.0
 
     # Render
-    table = Table(title="cc-improve Status", show_header=False)
+    table = Table(title="Claude Catharsis Status", show_header=False)
     table.add_column("Metric", style="bold")
     table.add_column("Value", justify="right")
 

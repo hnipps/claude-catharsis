@@ -73,7 +73,7 @@ def _try_git_commit(target: Path, proposal: dict) -> None:
         )
         subprocess.run(
             ["git", "commit", "-m",
-             f"cc-improve: {title}\n\nAddresses failure pattern: {pattern_type}"],
+             f"catharsis: {title}\n\nAddresses failure pattern: {pattern_type}"],
             capture_output=True, cwd=target.parent,
         )
     except Exception:

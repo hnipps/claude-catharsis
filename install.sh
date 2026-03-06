@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Installing cc-improve..."
+echo "Installing Claude Catharsis..."
 
 # Create directory structure
 mkdir -p ~/.claude-analysis/{archive,reports,proposals,logs}
@@ -36,6 +36,6 @@ echo ""
 echo "(Replace SCRIPT_DIR with: $SCRIPT_DIR)"
 echo ""
 echo "Quick start:"
-echo "  cc-improve collect          # Backfill all existing sessions"
-echo "  cc-improve analyze --skip-llm  # Compute deterministic metrics"
-echo "  cc-improve status           # View dashboard"
+echo "  catharsis collect          # Backfill all existing sessions"
+echo "  catharsis analyze --skip-llm  # Compute deterministic metrics"
+echo "  catharsis status           # View dashboard"

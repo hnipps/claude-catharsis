@@ -1,19 +1,19 @@
-"""CLI entry point for cc-improve."""
+"""CLI entry point for Claude Catharsis."""
 
 from __future__ import annotations
 
 import click
 from rich.console import Console
 
-from cc_improve.config import load_config
-from cc_improve.db import ensure_schema, get_connection
-from cc_improve.paths import ensure_dirs
+from catharsis.config import load_config
+from catharsis.db import ensure_schema, get_connection
+from catharsis.paths import ensure_dirs
 
 
 @click.group()
 @click.pass_context
 def main(ctx: click.Context) -> None:
-    """cc-improve: Analyze Claude Code conversations and improve instructions."""
+    """Claude Catharsis: Analyze Claude Code conversations and improve instructions."""
     ensure_dirs()
     ctx.ensure_object(dict)
     ctx.obj["config"] = load_config()
@@ -33,8 +33,8 @@ def collect(ctx: click.Context, session_id: str | None, force: bool) -> None:
     console = ctx.obj["console"]
 
     if session_id:
-        from cc_improve.collector.hook import _find_jsonl
-        from cc_improve.collector.ingest import ingest_session
+        from catharsis.collector.hook import _find_jsonl
+        from catharsis.collector.ingest import ingest_session
 
         result = _find_jsonl(session_id)
         if result:
@@ -47,7 +47,7 @@ def collect(ctx: click.Context, session_id: str | None, force: bool) -> None:
             console.print(f"[red]Session {session_id} not found[/red]")
             raise SystemExit(1)
     else:
-        from cc_improve.collector.backfill import backfill
+        from catharsis.collector.backfill import backfill
 
         ingested, skipped = backfill(
             conn,
@@ -70,8 +70,8 @@ def analyze(ctx: click.Context, skip_llm: bool, force: bool) -> None:
 
     from datetime import datetime, timedelta, timezone
 
-    from cc_improve.analyzer.metrics import compute_all_metrics, store_metrics
-    from cc_improve.analyzer.report import generate_markdown_report, render_metrics_table
+    from catharsis.analyzer.metrics import compute_all_metrics, store_metrics
+    from catharsis.analyzer.report import generate_markdown_report, render_metrics_table
 
     lookback = config.get("lookback_days", 7)
     ref = datetime.now(timezone.utc)
@@ -86,7 +86,7 @@ def analyze(ctx: click.Context, skip_llm: bool, force: bool) -> None:
     console.print(f"\n[dim]Report saved to {report_path}[/dim]")
 
     if not skip_llm:
-        from cc_improve.analyzer.judge import run_llm_analysis
+        from catharsis.analyzer.judge import run_llm_analysis
 
         console.print("\n[bold]Running LLM analysis...[/bold]")
         result = run_llm_analysis(
@@ -122,7 +122,7 @@ def suggest(ctx: click.Context) -> None:
     config = ctx.obj["config"]
     console = ctx.obj["console"]
 
-    from cc_improve.improver.propose import generate_proposals
+    from catharsis.improver.propose import generate_proposals
 
     console.print("[bold]Generating improvement proposals...[/bold]")
     result = generate_proposals(
@@ -146,7 +146,7 @@ def review(ctx: click.Context) -> None:
     """Interactively review pending proposals."""
     conn = ctx.obj["conn"]
 
-    from cc_improve.reviewer.interactive import review_proposals
+    from catharsis.reviewer.interactive import review_proposals
 
     result = review_proposals(conn)
     console = ctx.obj["console"]
@@ -162,6 +162,6 @@ def review(ctx: click.Context) -> None:
 @click.pass_context
 def status(ctx: click.Context) -> None:
     """Show system status dashboard."""
-    from cc_improve.status import show_status
+    from catharsis.status import show_status
 
     show_status(ctx.obj["conn"], ctx.obj["console"])

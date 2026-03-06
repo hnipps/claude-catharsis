@@ -6,8 +6,8 @@ import logging
 import sqlite3
 from pathlib import Path
 
-from cc_improve.collector.ingest import ingest_session
-from cc_improve.paths import CLAUDE_PROJECTS_DIR, decode_project_path
+from catharsis.collector.ingest import ingest_session
+from catharsis.paths import CLAUDE_PROJECTS_DIR, decode_project_path
 
 logger = logging.getLogger(__name__)
 

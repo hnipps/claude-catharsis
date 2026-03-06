@@ -2,9 +2,9 @@
 
 import sqlite3
 
-from cc_improve.collector.ingest import ingest_session, session_exists
-from cc_improve.collector.session import compute_stats
-from cc_improve.collector.parser import parse_jsonl
+from catharsis.collector.ingest import ingest_session, session_exists
+from catharsis.collector.session import compute_stats
+from catharsis.collector.parser import parse_jsonl
 
 
 def test_compute_stats(sample_jsonl):

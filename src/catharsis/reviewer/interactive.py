@@ -128,7 +128,7 @@ def review_proposals(conn: sqlite3.Connection) -> dict:
 
 def _accept_proposal(conn: sqlite3.Connection, proposal: dict) -> None:
     """Accept a proposal: apply changes and record decision."""
-    from cc_improve.reviewer.apply import apply_proposal
+    from catharsis.reviewer.apply import apply_proposal
     now = datetime.now(timezone.utc).isoformat()
 
     apply_proposal(proposal)

@@ -9,9 +9,9 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cc_improve.collector.parser import ParsedSession, _extract_text, parse_jsonl
-from cc_improve.collector.session import compute_stats
-from cc_improve.paths import ARCHIVE_DIR
+from catharsis.collector.parser import ParsedSession, _extract_text, parse_jsonl
+from catharsis.collector.session import compute_stats
+from catharsis.paths import ARCHIVE_DIR
 
 logger = logging.getLogger(__name__)
 
