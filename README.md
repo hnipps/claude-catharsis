@@ -22,7 +22,13 @@ Session ends → Collector → Analyzer → Improver → Human Review → Better
 ## Install
 
 ```bash
-pip install -e .
+uv tool install .
+```
+
+Or with pip:
+
+```bash
+pip install .
 ```
 
 ## Usage
