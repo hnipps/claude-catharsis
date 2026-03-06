@@ -1,5 +1,8 @@
 # Claude Catharsis
 
+
+_Where Claude confronts itself._
+
 A self-improvement feedback loop for Claude Code. Analyzes your past conversations to detect failure patterns, then generates targeted instruction changes to prevent them.
 
 ```
