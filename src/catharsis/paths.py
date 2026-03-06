@@ -9,7 +9,7 @@ ARCHIVE_DIR = BASE_DIR / "archive"
 REPORTS_DIR = BASE_DIR / "reports"
 PROPOSALS_DIR = BASE_DIR / "proposals"
 LOGS_DIR = BASE_DIR / "logs"
-PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 CLAUDE_DIR = Path.home() / ".claude"
 CLAUDE_PROJECTS_DIR = CLAUDE_DIR / "projects"
