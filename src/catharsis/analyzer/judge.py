@@ -6,11 +6,71 @@ import json
 import logging
 import sqlite3
 import subprocess
+import threading
+import time
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from typing import Callable
 
 from catharsis.paths import ARCHIVE_DIR, REPORTS_DIR, load_prompt, prompt_version
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CliResult:
+    returncode: int
+    stdout: str
+    stderr_lines: list[str] = field(default_factory=list)
+    elapsed: float = 0.0
+    timed_out: bool = False
+
+
+def _run_claude_cli(
+    cmd: list[str],
+    timeout: int,
+    on_stderr_line: Callable[[str], None] | None = None,
+) -> CliResult:
+    """Run Claude CLI with real-time stderr streaming."""
+    stderr_lines: list[str] = []
+    start = time.monotonic()
+
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    def _read_stderr() -> None:
+        assert proc.stderr is not None
+        for line in proc.stderr:
+            stripped = line.rstrip("\n")
+            stderr_lines.append(stripped)
+            if on_stderr_line:
+                on_stderr_line(stripped)
+
+    stderr_thread = threading.Thread(target=_read_stderr, daemon=True)
+    stderr_thread.start()
+
+    timed_out = False
+    try:
+        stdout, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        stdout, _ = proc.communicate()
+        timed_out = True
+
+    stderr_thread.join(timeout=2)
+    elapsed = time.monotonic() - start
+
+    return CliResult(
+        returncode=proc.returncode if not timed_out else -1,
+        stdout=stdout or "",
+        stderr_lines=stderr_lines,
+        elapsed=elapsed,
+        timed_out=timed_out,
+    )
 
 
 def _get_unanalyzed_sessions(
@@ -72,6 +132,8 @@ def run_llm_analysis(
     token_ceiling_pct: float = 5.0,
     force: bool = False,
     auto_confirm: bool = False,
+    timeout: int = 600,
+    on_progress: Callable[[str], None] | None = None,
 ) -> dict:
     """Run LLM-as-judge analysis on unanalyzed sessions.
 
@@ -115,19 +177,30 @@ def run_llm_analysis(
         run_id = cursor.lastrowid
 
     # Launch Claude Code CLI
+    cmd = ["claude", "-p", prompt, "--output-format", "json", "--max-turns", "30"]
     try:
-        result = subprocess.run(
-            ["claude", "-p", prompt, "--output-format", "json", "--max-turns", "30"],
-            capture_output=True,
-            text=True,
-            timeout=600,
-        )
+        result = _run_claude_cli(cmd, timeout=timeout, on_stderr_line=on_progress)
+
+        if result.timed_out:
+            with conn:
+                conn.execute("UPDATE analysis_runs SET status = 'timeout' WHERE id = ?", (run_id,))
+            return {
+                "status": "timeout",
+                "elapsed": result.elapsed,
+                "session_count": len(sessions),
+                "stderr_tail": result.stderr_lines[-10:],
+            }
 
         if result.returncode != 0:
-            logger.error("Claude CLI failed: %s", result.stderr)
+            stderr_text = "\n".join(result.stderr_lines)
+            logger.error("Claude CLI failed: %s", stderr_text)
             with conn:
                 conn.execute("UPDATE analysis_runs SET status = 'failed' WHERE id = ?", (run_id,))
-            return {"status": "cli_error", "error": result.stderr}
+            return {
+                "status": "cli_error",
+                "error": stderr_text,
+                "stderr_tail": result.stderr_lines[-10:],
+            }
 
         # Parse the structured output
         output = json.loads(result.stdout) if result.stdout.strip() else {}
@@ -148,10 +221,6 @@ def run_llm_analysis(
 
         return {"status": "completed", "analyzed": len(sessions), "run_id": run_id}
 
-    except subprocess.TimeoutExpired:
-        with conn:
-            conn.execute("UPDATE analysis_runs SET status = 'timeout' WHERE id = ?", (run_id,))
-        return {"status": "timeout"}
     except FileNotFoundError:
         with conn:
             conn.execute("UPDATE analysis_runs SET status = 'failed' WHERE id = ?", (run_id,))

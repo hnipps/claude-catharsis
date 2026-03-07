@@ -82,6 +82,64 @@ class TestAnalyzeFlags:
             assert "--no-limit" in result.output
 
 
+    def test_analyze_timeout_flag_wiring(self, runner, mock_cli_setup):
+        """--timeout should be passed through to run_llm_analysis."""
+        mock_run = MagicMock(return_value={"status": "completed", "analyzed": 0})
+        with (
+            patch("catharsis.analyzer.judge.run_llm_analysis", mock_run),
+            patch("catharsis.analyzer.metrics.compute_all_metrics", return_value={}),
+            patch("catharsis.analyzer.metrics.store_metrics"),
+            patch("catharsis.analyzer.report.render_metrics_table"),
+            patch("catharsis.analyzer.report.generate_markdown_report", return_value="/tmp/r.md"),
+        ):
+            result = runner.invoke(main, ["analyze", "--timeout", "30"])
+            assert result.exit_code == 0, result.output
+            mock_run.assert_called_once()
+            _, kwargs = mock_run.call_args
+            assert kwargs["timeout"] == 30
+
+    def test_analyze_timeout_shows_elapsed_and_stderr(self, runner, mock_cli_setup):
+        """Timeout result should show elapsed time and stderr tail."""
+        mock_run = MagicMock(return_value={
+            "status": "timeout",
+            "elapsed": 600.5,
+            "session_count": 5,
+            "stderr_tail": ["Processing session 3/5...", "Reading archive..."],
+        })
+        with (
+            patch("catharsis.analyzer.judge.run_llm_analysis", mock_run),
+            patch("catharsis.analyzer.metrics.compute_all_metrics", return_value={}),
+            patch("catharsis.analyzer.metrics.store_metrics"),
+            patch("catharsis.analyzer.report.render_metrics_table"),
+            patch("catharsis.analyzer.report.generate_markdown_report", return_value="/tmp/r.md"),
+        ):
+            result = runner.invoke(main, ["analyze"])
+            assert result.exit_code == 0, result.output
+            assert "timed out" in result.output
+            assert "600s" in result.output or "601s" in result.output
+            assert "5 sessions" in result.output
+            assert "Reading archive" in result.output
+
+    def test_analyze_cli_error_shows_stderr(self, runner, mock_cli_setup):
+        """cli_error result should show stderr tail."""
+        mock_run = MagicMock(return_value={
+            "status": "cli_error",
+            "error": "something broke",
+            "stderr_tail": ["Error: invalid JSON"],
+        })
+        with (
+            patch("catharsis.analyzer.judge.run_llm_analysis", mock_run),
+            patch("catharsis.analyzer.metrics.compute_all_metrics", return_value={}),
+            patch("catharsis.analyzer.metrics.store_metrics"),
+            patch("catharsis.analyzer.report.render_metrics_table"),
+            patch("catharsis.analyzer.report.generate_markdown_report", return_value="/tmp/r.md"),
+        ):
+            result = runner.invoke(main, ["analyze"])
+            assert result.exit_code == 0, result.output
+            assert "returned an error" in result.output
+            assert "invalid JSON" in result.output
+
+
 class TestCollectFlags:
     def test_collect_passes_force(self, runner, mock_cli_setup):
         mock_backfill = MagicMock(return_value=(5, 2))

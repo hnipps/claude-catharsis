@@ -17,6 +17,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "excluded_sessions": [],
     "instruction_budget_lines": 200,
     "top_n_patterns": 5,
+    "analysis_timeout": 600,
 }
 
 
