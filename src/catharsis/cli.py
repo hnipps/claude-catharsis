@@ -60,9 +60,10 @@ def collect(ctx: click.Context, session_id: str | None, force: bool) -> None:
 
 @main.command()
 @click.option("--skip-llm", is_flag=True, help="Only compute deterministic metrics, skip LLM analysis")
-@click.option("--force", is_flag=True, help="Re-analyze sessions that were already analyzed")
+@click.option("--force-reanalyze", is_flag=True, help="Re-analyze sessions that were already analyzed")
+@click.option("--no-limit", is_flag=True, help="Bypass the token ceiling safety check")
 @click.pass_context
-def analyze(ctx: click.Context, skip_llm: bool, force: bool) -> None:
+def analyze(ctx: click.Context, skip_llm: bool, force_reanalyze: bool, no_limit: bool) -> None:
     """Compute metrics and run LLM analysis on collected sessions."""
     conn = ctx.obj["conn"]
     config = ctx.obj["config"]
@@ -94,7 +95,8 @@ def analyze(ctx: click.Context, skip_llm: bool, force: bool) -> None:
             lookback_days=lookback,
             max_sessions=config.get("max_analysis_sessions", 20),
             token_ceiling_pct=config.get("token_ceiling_pct", 5.0),
-            force=force,
+            force=force_reanalyze,
+            auto_confirm=no_limit,
         )
 
         status = result.get("status")
@@ -106,7 +108,7 @@ def analyze(ctx: click.Context, skip_llm: bool, force: bool) -> None:
             console.print(
                 f"[yellow]Estimated token usage ({result['estimated_tokens']:,}) "
                 f"exceeds ceiling ({result['ceiling']:,.0f}). "
-                f"Run with --force to override.[/yellow]"
+                f"Run with --no-limit to override.[/yellow]"
             )
         elif status == "cli_not_found":
             console.print("[red]Claude CLI not found. Is it installed?[/red]")
