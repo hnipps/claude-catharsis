@@ -62,8 +62,10 @@ def collect(ctx: click.Context, session_id: str | None, force: bool) -> None:
 @click.option("--skip-llm", is_flag=True, help="Only compute deterministic metrics, skip LLM analysis")
 @click.option("--force-reanalyze", is_flag=True, help="Re-analyze sessions that were already analyzed")
 @click.option("--no-limit", is_flag=True, help="Bypass the token ceiling safety check")
+@click.option("--timeout", type=int, default=None, help="Analysis timeout in seconds (default: from config)")
+@click.option("-v", "--verbose", is_flag=True, help="Print Claude CLI stderr output in real time")
 @click.pass_context
-def analyze(ctx: click.Context, skip_llm: bool, force_reanalyze: bool, no_limit: bool) -> None:
+def analyze(ctx: click.Context, skip_llm: bool, force_reanalyze: bool, no_limit: bool, timeout: int | None, verbose: bool) -> None:
     """Compute metrics and run LLM analysis on collected sessions."""
     conn = ctx.obj["conn"]
     config = ctx.obj["config"]
@@ -89,15 +91,27 @@ def analyze(ctx: click.Context, skip_llm: bool, force_reanalyze: bool, no_limit:
     if not skip_llm:
         from catharsis.analyzer.judge import run_llm_analysis
 
-        console.print("\n[bold]Running LLM analysis...[/bold]")
-        result = run_llm_analysis(
-            conn,
-            lookback_days=lookback,
-            max_sessions=config.get("max_analysis_sessions", 20),
-            token_ceiling_pct=config.get("token_ceiling_pct", 5.0),
-            force=force_reanalyze,
-            auto_confirm=no_limit,
-        )
+        analysis_timeout = timeout or config.get("analysis_timeout", 600)
+
+        def on_progress(line: str) -> None:
+            if verbose:
+                console.print(f"[dim]  {line}[/dim]")
+            elif hasattr(on_progress, "_status"):
+                truncated = line[:80] + ("..." if len(line) > 80 else "")
+                on_progress._status.update(f"[bold]Running LLM analysis...[/bold] {truncated}")
+
+        with console.status("[bold]Running LLM analysis...[/bold]") as status_ctx:
+            on_progress._status = status_ctx
+            result = run_llm_analysis(
+                conn,
+                lookback_days=lookback,
+                max_sessions=config.get("max_analysis_sessions", 20),
+                token_ceiling_pct=config.get("token_ceiling_pct", 5.0),
+                force=force_reanalyze,
+                auto_confirm=no_limit,
+                timeout=analysis_timeout,
+                on_progress=on_progress,
+            )
 
         status = result.get("status")
         if status == "completed":
@@ -110,8 +124,27 @@ def analyze(ctx: click.Context, skip_llm: bool, force_reanalyze: bool, no_limit:
                 f"exceeds ceiling ({result['ceiling']:,.0f}). "
                 f"Run with --no-limit to override.[/yellow]"
             )
+        elif status == "timeout":
+            elapsed = result.get("elapsed", 0)
+            session_count = result.get("session_count", 0)
+            console.print(
+                f"[red]Analysis timed out after {elapsed:.0f}s "
+                f"({session_count} sessions). The subprocess was killed.[/red]"
+            )
+            stderr_tail = result.get("stderr_tail", [])
+            if stderr_tail:
+                console.print("[dim]Last stderr output:[/dim]")
+                for line in stderr_tail:
+                    console.print(f"[dim]  {line}[/dim]")
         elif status == "cli_not_found":
             console.print("[red]Claude CLI not found. Is it installed?[/red]")
+        elif status == "cli_error":
+            console.print(f"[red]Analysis failed: Claude CLI returned an error[/red]")
+            stderr_tail = result.get("stderr_tail", [])
+            if stderr_tail:
+                console.print("[dim]Last stderr output:[/dim]")
+                for line in stderr_tail:
+                    console.print(f"[dim]  {line}[/dim]")
         else:
             console.print(f"[red]Analysis failed: {result.get('error', status)}[/red]")
 
